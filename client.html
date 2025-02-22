@@ -1,0 +1,68 @@
+<!-- client.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>客户端</title>
+    <style>
+        .container { max-width: 800px; margin: 20px auto; padding: 20px; }
+        .messages { height: 400px; border: 1px solid #ccc; overflow-y: scroll; padding: 10px; }
+        .message { margin: 10px 0; padding: 8px; background: #e3f2fd; border-radius: 5px; }
+        .input-area { margin-top: 20px; }
+        img { max-width: 200px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>客户端</h2>
+        <div class="messages" id="messages"></div>
+        <div class="input-area">
+            <input type="text" id="messageInput" placeholder="输入消息">
+            <input type="file" id="imageInput" accept="image/*">
+            <button onclick="sendMessage()">发送</button>
+        </div>
+    </div>
+
+    <script>
+        function updateMessages() {
+            const messages = JSON.parse(localStorage.getItem('chat') || '[]');
+            document.getElementById('messages').innerHTML = messages
+                .map(msg => `<div class="message">${msg.sender}: ${msg.content}</div>`)
+                .join('');
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const fileInput = document.getElementById('imageInput');
+            
+            const messages = JSON.parse(localStorage.getItem('chat') || '[]');
+            
+            if (fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    messages.push({
+                        sender: '客户端',
+                        content: `< img src="${e.target.result}">`
+                    });
+                    localStorage.setItem('chat', JSON.stringify(messages));
+                    input.value = '';
+                    fileInput.value = '';
+                    updateMessages();
+                }
+                reader.readAsDataURL(fileInput.files[0]);
+            } else if (input.value) {
+                messages.push({
+                    sender: '客户端',
+                    content: input.value
+                });
+                localStorage.setItem('chat', JSON.stringify(messages));
+                input.value = '';
+                updateMessages();
+            }
+        }
+
+        // 每1秒刷新消息
+        setInterval(updateMessages, 1000);
+        updateMessages();
+    </script>
+</body>
+</html>
